@@ -22,6 +22,7 @@
   - [ ] RDS
   - [ ] Jenkins
   - [ ] SonarQube
+  - [ ] Terraform
 ### Tech Stack
 - Backend
   - Golang
