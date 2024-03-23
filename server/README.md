@@ -16,6 +16,10 @@
   - [ ] comments
   - [ ] reactions
   - [ ] full text search
+### Deployment
+  - [ ] ECR
+  - [ ] ECS
+  - [ ] RDS
 ### Tech Stack
 - Backend
   - Golang
