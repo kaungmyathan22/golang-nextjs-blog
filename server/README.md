@@ -20,6 +20,8 @@
   - [ ] ECR
   - [ ] ECS
   - [ ] RDS
+  - [ ] Jenkins
+  - [ ] SonarQube
 ### Tech Stack
 - Backend
   - Golang
