@@ -2,6 +2,9 @@ package handlers
 
 import "net/http"
 
+type AuthHandler struct {
+}
+
 type IAuthHandler interface {
 	LoginHandler() http.Response
 	RegisterHandler() http.Response
