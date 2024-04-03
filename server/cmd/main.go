@@ -2,19 +2,28 @@ package main
 
 import (
 	"fmt"
-	"sync"
+
+	logger "github.com/kaungmyathan22/golang-blog/cmd/common"
 )
 
 type Config struct {
-	PORT int
+	PORT string
 	ENV  string
 }
 
 type Application struct {
 	config Config
-	wg     sync.WaitGroup
 }
 
 func main() {
-	fmt.Println("Hola amigos!!!")
+	app := &Application{
+		config: Config{},
+	}
+	app.BootstrapApp()
+	logger.Info(fmt.Sprintf("server is running at http://localhost:%s", app.config.PORT))
+	err := app.Serve()
+	if err != nil {
+		logger.Error(err.Error())
+		logger.Error("server quit")
+	}
 }

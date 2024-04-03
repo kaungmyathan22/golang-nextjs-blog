@@ -11,11 +11,6 @@ import (
 
 var ConfigInstance Config
 
-func (app *Application) BootstrapApp() {
-	logger.Init()
-	app.LoadConfig()
-}
-
 func (app *Application) LoadConfig() {
 	dir, err := os.Getwd()
 	if err != nil {
@@ -28,5 +23,6 @@ func (app *Application) LoadConfig() {
 	if err := viper.Unmarshal(&ConfigInstance); err != nil {
 		logger.Fatal(err.Error())
 	}
-
+	app.config = ConfigInstance
+	logger.Info("successfully loaded environment variables")
 }

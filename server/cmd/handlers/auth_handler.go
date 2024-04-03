@@ -1,6 +1,10 @@
 package handlers
 
-import "net/http"
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
 
 type AuthHandler struct {
 }
@@ -14,4 +18,16 @@ type IAuthHandler interface {
 	ChangePasswordHandler() http.Response
 	EditProfileHandler() http.Response
 	RefreshTokenHandler() http.Response
+}
+
+func (handler *AuthHandler) LoginHandler(c *gin.Context) {
+	c.JSON(200, map[string]any{
+		"path": "/login",
+	})
+}
+
+func (handler *AuthHandler) RegisterHandler(c *gin.Context) {
+	c.JSON(200, map[string]any{
+		"path": "/register",
+	})
 }
