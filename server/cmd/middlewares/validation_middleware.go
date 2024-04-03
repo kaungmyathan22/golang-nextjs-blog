@@ -1,7 +1,9 @@
 package middlewares
 
 import (
+	"fmt"
 	"net/http"
+	"reflect"
 	"sync"
 
 	"github.com/gin-gonic/gin"
@@ -26,7 +28,7 @@ func ValidateRequest(validationStruct interface{}) gin.HandlerFunc {
 
 		if contentType == "application/json" {
 			if err := validateJSON(c, validationStruct); err != nil {
-				c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+				c.JSON(http.StatusBadRequest, gin.H{"error": formatValidationErrors(err, validationStruct)})
 				c.Abort()
 				return
 			}
@@ -35,8 +37,11 @@ func ValidateRequest(validationStruct interface{}) gin.HandlerFunc {
 	}
 }
 
-// Function to validate the JSON body
 func validateJSON(c *gin.Context, validationStruct interface{}) error {
+	if validationStruct == nil {
+		return nil
+	}
+
 	if err := c.ShouldBindJSON(validationStruct); err != nil {
 		return err
 	}
@@ -46,4 +51,17 @@ func validateJSON(c *gin.Context, validationStruct interface{}) error {
 	}
 
 	return nil
+}
+
+func formatValidationErrors(err error, validationStruct interface{}) map[string]string {
+	errors := make(map[string]string)
+	if validationErrs, ok := err.(validator.ValidationErrors); ok {
+		t := reflect.TypeOf(validationStruct).Elem()
+		for _, err := range validationErrs {
+			field, _ := t.FieldByName(err.Field())
+			fieldName := field.Tag.Get("json")
+			errors[fieldName] = fmt.Sprintf("Field validation for '%s' failed on the '%s' tag", fieldName, err.Tag())
+		}
+	}
+	return errors
 }
