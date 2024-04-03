@@ -5,6 +5,11 @@ import (
 	"github.com/kaungmyathan22/golang-blog/cmd/handlers"
 )
 
-func AuthRoutes(router *gin.RouterGroup, handler *handlers.AuthHandler) {
-	router.POST("/login", handler.LoginHandler)
+func AuthRoutes(v1Routes *gin.RouterGroup) {
+	handlers := &handlers.AuthHandler{}
+	router := v1Routes.Group("/authentication")
+	// public routes
+	router.POST("/login", handlers.LoginHandler)
+	router.POST("/register", handlers.RegisterHandler)
+	// private routes
 }

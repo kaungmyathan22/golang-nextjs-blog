@@ -27,6 +27,9 @@ func (handler *AuthHandler) LoginHandler(c *gin.Context) {
 }
 
 func (handler *AuthHandler) RegisterHandler(c *gin.Context) {
+	// validate payload
+	// hash user password
+	// save user to db.
 	c.JSON(200, map[string]any{
 		"path": "/register",
 	})
