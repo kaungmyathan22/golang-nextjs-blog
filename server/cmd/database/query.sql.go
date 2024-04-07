@@ -17,7 +17,7 @@ INSERT INTO users (
 ) VALUES (
   $1, $2
 )
-RETURNING id, email, fullname
+RETURNING id, email, fullname, password
 `
 
 type CreateUserParams struct {
@@ -28,7 +28,12 @@ type CreateUserParams struct {
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
 	row := q.db.QueryRow(ctx, createUser, arg.Email, arg.Fullname)
 	var i User
-	err := row.Scan(&i.ID, &i.Email, &i.Fullname)
+	err := row.Scan(
+		&i.ID,
+		&i.Email,
+		&i.Fullname,
+		&i.Password,
+	)
 	return i, err
 }
 
@@ -43,19 +48,24 @@ func (q *Queries) DeleteUser(ctx context.Context, id int64) error {
 }
 
 const getUserbyID = `-- name: GetUserbyID :one
-SELECT id, email, fullname FROM users
+SELECT id, email, fullname, password FROM users
 WHERE id = $1 LIMIT 1
 `
 
 func (q *Queries) GetUserbyID(ctx context.Context, id int64) (User, error) {
 	row := q.db.QueryRow(ctx, getUserbyID, id)
 	var i User
-	err := row.Scan(&i.ID, &i.Email, &i.Fullname)
+	err := row.Scan(
+		&i.ID,
+		&i.Email,
+		&i.Fullname,
+		&i.Password,
+	)
 	return i, err
 }
 
 const getUsers = `-- name: GetUsers :many
-SELECT id, email, fullname FROM users
+SELECT id, email, fullname, password FROM users
 ORDER BY id
 `
 
@@ -68,7 +78,12 @@ func (q *Queries) GetUsers(ctx context.Context) ([]User, error) {
 	var items []User
 	for rows.Next() {
 		var i User
-		if err := rows.Scan(&i.ID, &i.Email, &i.Fullname); err != nil {
+		if err := rows.Scan(
+			&i.ID,
+			&i.Email,
+			&i.Fullname,
+			&i.Password,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

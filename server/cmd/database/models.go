@@ -12,4 +12,5 @@ type User struct {
 	ID       int64
 	Email    string
 	Fullname pgtype.Text
+	Password string
 }
