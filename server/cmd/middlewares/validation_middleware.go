@@ -32,6 +32,10 @@ func ValidateRequest(validationStruct interface{}) gin.HandlerFunc {
 				c.Abort()
 				return
 			}
+		} else {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid content type. Only accept application/json."})
+			c.Abort()
+			return
 		}
 		c.Next()
 	}
