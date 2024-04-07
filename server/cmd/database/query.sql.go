@@ -13,9 +13,9 @@ import (
 
 const createUser = `-- name: CreateUser :one
 INSERT INTO users (
-  email, fullName
+  email, fullName,password
 ) VALUES (
-  $1, $2
+  $1, $2, $3
 )
 RETURNING id, email, fullname, password
 `
@@ -23,10 +23,11 @@ RETURNING id, email, fullname, password
 type CreateUserParams struct {
 	Email    string
 	Fullname pgtype.Text
+	Password string
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
-	row := q.db.QueryRow(ctx, createUser, arg.Email, arg.Fullname)
+	row := q.db.QueryRow(ctx, createUser, arg.Email, arg.Fullname, arg.Password)
 	var i User
 	err := row.Scan(
 		&i.ID,

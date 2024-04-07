@@ -1,7 +1,9 @@
 package middlewares
 
 import (
+	"bytes"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"reflect"
 	"sync"
@@ -27,7 +29,7 @@ func ValidateRequest(validationStruct interface{}) gin.HandlerFunc {
 		contentType := c.ContentType()
 
 		if contentType == "application/json" {
-			if err := validateJSON(c, validationStruct); err != nil {
+			if err := ValidateJSON(c, validationStruct); err != nil {
 				c.JSON(http.StatusBadRequest, gin.H{"error": formatValidationErrors(err, validationStruct)})
 				c.Abort()
 				return
@@ -41,10 +43,16 @@ func ValidateRequest(validationStruct interface{}) gin.HandlerFunc {
 	}
 }
 
-func validateJSON(c *gin.Context, validationStruct interface{}) error {
+func ValidateJSON(c *gin.Context, validationStruct interface{}) error {
 	if validationStruct == nil {
 		return nil
 	}
+	requestBody, err := ioutil.ReadAll(c.Request.Body)
+	if err != nil {
+		return err
+	}
+
+	c.Request.Body = ioutil.NopCloser(bytes.NewReader(requestBody))
 
 	if err := c.ShouldBindJSON(validationStruct); err != nil {
 		return err
@@ -53,6 +61,7 @@ func validateJSON(c *gin.Context, validationStruct interface{}) error {
 	if err := validate.Struct(validationStruct); err != nil {
 		return err
 	}
+	c.Request.Body = ioutil.NopCloser(bytes.NewReader(requestBody))
 
 	return nil
 }

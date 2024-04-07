@@ -2,12 +2,20 @@ package handlers
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/jackc/pgx"
+	"github.com/jackc/pgx/v5/pgtype"
 	logger "github.com/kaungmyathan22/golang-blog/cmd/common"
 	"github.com/kaungmyathan22/golang-blog/cmd/database"
+	"github.com/kaungmyathan22/golang-blog/cmd/dto"
+	models "github.com/kaungmyathan22/golang-blog/cmd/dto"
+	"github.com/kaungmyathan22/golang-blog/cmd/utils"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type AuthHandler struct {
@@ -42,10 +50,48 @@ func (handler *AuthHandler) LoginHandler(c *gin.Context) {
 }
 
 func (handler *AuthHandler) RegisterHandler(c *gin.Context) {
-	// validate payload
+	var payload models.RegisterPayload
+
+	if err := c.BindJSON(&payload); err != nil {
+		fmt.Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to parse request body"})
+		return
+	}
+
 	// hash user password
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(payload.Password), bcrypt.DefaultCost)
+	if err != nil {
+		fmt.Println("Error hashing password:", err)
+		return
+	}
+
 	// save user to db.
-	c.JSON(200, map[string]any{
-		"path": "/register",
-	})
+	dbPayload := database.CreateUserParams{
+		Fullname: pgtype.Text{
+			String: payload.FullName,
+			Valid:  true,
+		},
+		Email:    payload.Email,
+		Password: string(hashedPassword),
+	}
+	user, err := handler.Repository.CreateUser(c, dbPayload)
+	if err != nil {
+		fmt.Println(err.Error())
+		pgErr := pgx.PgError{}
+		fmt.Println(errors.As(err, &pgErr))
+		if utils.IsDuplicateKeyError(err) {
+			c.JSON(http.StatusConflict, map[string]string{
+				"message": "user with given email address already exists.",
+			})
+			return
+		}
+
+		c.JSON(http.StatusInternalServerError, map[string]string{
+			"message": err.Error(),
+		})
+		return
+	}
+	userDTO := &dto.UserDTO{}
+	userDTO.FromUserModel(&user)
+	c.JSON(200, userDTO)
 }

@@ -1,4 +1,4 @@
-package models
+package dto
 
 type RegisterPayload struct {
 	Email    string `json:"email" validate:"required,email"`
