@@ -36,8 +36,15 @@ type IAuthHandler interface {
 func (handler *AuthHandler) LoginHandler(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(c, time.Second*1)
 	defer cancel()
-	authors, err := handler.Repository.GetUsers(ctx)
+	var payload models.RegisterPayload
+	if err := c.BindJSON(&payload); err != nil {
+		fmt.Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to parse request body"})
+		return
+	}
+	author, err := handler.Repository.GetUserbyEmail(ctx, payload.Email)
 	if err != nil {
+		fmt.Println(err.Error())
 		logger.Error(err.Error())
 		c.JSON(http.StatusInternalServerError, map[string]string{
 			"error": "something went wrong while fetching a list of users.",
@@ -45,7 +52,7 @@ func (handler *AuthHandler) LoginHandler(c *gin.Context) {
 		return
 	}
 	c.JSON(200, map[string]any{
-		"data": authors,
+		"data": author,
 	})
 }
 
