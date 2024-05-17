@@ -7,7 +7,38 @@ package database
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgconn"
+	"github.com/jackc/pgx/v5/pgtype"
 )
+
+const createUser = `-- name: CreateUser :execresult
+INSERT INTO users (
+  name, password, email
+) VALUES (
+    $1, $2, $3
+)
+`
+
+type CreateUserParams struct {
+	Name     string
+	Password string
+	Email    string
+}
+
+func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (pgconn.CommandTag, error) {
+	return q.db.Exec(ctx, createUser, arg.Name, arg.Password, arg.Email)
+}
+
+const deleteUser = `-- name: DeleteUser :exec
+DELETE FROM users
+WHERE id = $1
+`
+
+func (q *Queries) DeleteUser(ctx context.Context, id int64) error {
+	_, err := q.db.Exec(ctx, deleteUser, id)
+	return err
+}
 
 const getUserByID = `-- name: GetUserByID :one
 SELECT id, name, password, email, createdat, updatedat FROM users
@@ -26,4 +57,50 @@ func (q *Queries) GetUserByID(ctx context.Context, id int64) (User, error) {
 		&i.Updatedat,
 	)
 	return i, err
+}
+
+const listUsers = `-- name: ListUsers :many
+SELECT id, name, email, createdAt, updatedAt
+FROM users
+ORDER BY id
+LIMIT $1 OFFSET $2
+`
+
+type ListUsersParams struct {
+	Limit  int32
+	Offset int32
+}
+
+type ListUsersRow struct {
+	ID        int64
+	Name      string
+	Email     string
+	Createdat pgtype.Timestamp
+	Updatedat pgtype.Timestamp
+}
+
+func (q *Queries) ListUsers(ctx context.Context, arg ListUsersParams) ([]ListUsersRow, error) {
+	rows, err := q.db.Query(ctx, listUsers, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListUsersRow
+	for rows.Next() {
+		var i ListUsersRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Email,
+			&i.Createdat,
+			&i.Updatedat,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
