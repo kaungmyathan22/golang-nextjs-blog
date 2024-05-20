@@ -1,7 +1,6 @@
 package config
 
 import (
-	"context"
 	"database/sql"
 	"fmt"
 	"log"
@@ -38,17 +37,17 @@ func LoadConfig() {
 func ConnectToDatabase() error {
 	const postgresURL = "postgres://admin:admin@localhost:5432/sqlc?sslmode=disable"
 	db, err := sql.Open("postgres", postgresURL)
-	defer db.Close()
 	if err != nil {
 		log.Println("Something went wrong while connecting to database!!")
 		panic(err)
 	}
+	defer db.Close()
 	err = db.Ping()
 	if err != nil {
 		log.Println("Something went wrong while pinging to database!!")
 		panic(err)
 	}
-	ctx := context.Background()
+	// ctx := context.Background()
 	database.New(db)
 	// queries := database.New(db)
 	return nil
