@@ -1,43 +1,12 @@
 package interfaces
 
-type LoginPayload struct {
-	Email    string
-	Password string
-}
-
-type LoginResult struct {
-	token string
-}
-
-type RegisterPayload struct {
-	Username string
-	Email    string
-	Name     string
-	Password string
-}
-
-type ChangePasswordPayload struct {
-	OldPassword string
-	NewPassword string
-}
-
-type ForgotPasswordPayload struct {
-	Email string
-}
-
-type ResetPasswordPayload struct {
-	Email string
-}
-
-type MessageResponse struct {
-	Message string
-}
+import "github.com/kaungmyathan22/golang-nextjs-blog/app/models/apis"
 
 type AuthService interface {
-	Login(payload LoginPayload) (LoginResult, error)
-	Register(payload RegisterPayload) (MessageResponse, error)
-	ChangePassword(payload ChangePasswordPayload) (string, error)
-	ForgotPassword(payload ForgotPasswordPayload) (string, error)
-	ResetPassword(payload ResetPasswordPayload) (string, error)
+	Login(payload apis.LoginPayload) (apis.LoginResult, error)
+	Register(payload apis.RegisterPayload) (apis.MessageResponse, error)
+	ChangePassword(payload apis.ChangePasswordPayload) (string, error)
+	ForgotPassword(payload apis.ForgotPasswordPayload) (string, error)
+	ResetPassword(payload apis.ResetPasswordPayload) (string, error)
 	RefreshToken() (string, error)
 }
