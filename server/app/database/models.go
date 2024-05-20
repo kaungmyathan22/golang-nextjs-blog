@@ -5,40 +5,41 @@
 package database
 
 import (
-	"github.com/jackc/pgx/v5/pgtype"
+	"database/sql"
+	"time"
 )
 
 type Account struct {
 	ID          int64
-	Lastloginat pgtype.Timestamp
-	Createdat   pgtype.Timestamp
-	Updatedat   pgtype.Timestamp
+	Lastloginat sql.NullTime
+	Createdat   sql.NullTime
+	Updatedat   sql.NullTime
 }
 
 type Category struct {
 	ID        int64
-	Title     pgtype.Text
-	Createdat pgtype.Timestamp
-	Updatedat pgtype.Timestamp
+	Title     sql.NullString
+	Createdat sql.NullTime
+	Updatedat sql.NullTime
 }
 
 type Post struct {
 	ID         int64
-	Title      pgtype.Text
-	Content    pgtype.Text
-	Createdat  pgtype.Timestamp
-	Updatedat  pgtype.Timestamp
-	Authorid   pgtype.Int8
-	Categoryid pgtype.Int8
+	Title      sql.NullString
+	Content    sql.NullString
+	Createdat  sql.NullTime
+	Updatedat  sql.NullTime
+	Authorid   sql.NullInt64
+	Categoryid sql.NullInt64
 }
 
 type Token struct {
 	ID        int64
 	Token     string
-	Expiredat pgtype.Timestamp
+	Expiredat time.Time
 	Tokentype string
-	Createdat pgtype.Timestamp
-	Updatedat pgtype.Timestamp
+	Createdat sql.NullTime
+	Updatedat sql.NullTime
 }
 
 type User struct {
@@ -46,6 +47,6 @@ type User struct {
 	Name      string
 	Password  string
 	Email     string
-	Createdat pgtype.Timestamp
-	Updatedat pgtype.Timestamp
+	Createdat sql.NullTime
+	Updatedat sql.NullTime
 }

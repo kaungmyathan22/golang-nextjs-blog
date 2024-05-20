@@ -7,9 +7,7 @@ package database
 
 import (
 	"context"
-
-	"github.com/jackc/pgx/v5/pgconn"
-	"github.com/jackc/pgx/v5/pgtype"
+	"database/sql"
 )
 
 const createUser = `-- name: CreateUser :execresult
@@ -26,8 +24,8 @@ type CreateUserParams struct {
 	Email    string
 }
 
-func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (pgconn.CommandTag, error) {
-	return q.db.Exec(ctx, createUser, arg.Name, arg.Password, arg.Email)
+func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (sql.Result, error) {
+	return q.db.ExecContext(ctx, createUser, arg.Name, arg.Password, arg.Email)
 }
 
 const deleteUser = `-- name: DeleteUser :exec
@@ -36,7 +34,7 @@ WHERE id = $1
 `
 
 func (q *Queries) DeleteUser(ctx context.Context, id int64) error {
-	_, err := q.db.Exec(ctx, deleteUser, id)
+	_, err := q.db.ExecContext(ctx, deleteUser, id)
 	return err
 }
 
@@ -46,7 +44,7 @@ WHERE id = $1 LIMIT 1
 `
 
 func (q *Queries) GetUserByID(ctx context.Context, id int64) (User, error) {
-	row := q.db.QueryRow(ctx, getUserByID, id)
+	row := q.db.QueryRowContext(ctx, getUserByID, id)
 	var i User
 	err := row.Scan(
 		&i.ID,
@@ -75,12 +73,12 @@ type ListUsersRow struct {
 	ID        int64
 	Name      string
 	Email     string
-	Createdat pgtype.Timestamp
-	Updatedat pgtype.Timestamp
+	Createdat sql.NullTime
+	Updatedat sql.NullTime
 }
 
 func (q *Queries) ListUsers(ctx context.Context, arg ListUsersParams) ([]ListUsersRow, error) {
-	rows, err := q.db.Query(ctx, listUsers, arg.Limit, arg.Offset)
+	rows, err := q.db.QueryContext(ctx, listUsers, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
@@ -98,6 +96,9 @@ func (q *Queries) ListUsers(ctx context.Context, arg ListUsersParams) ([]ListUse
 			return nil, err
 		}
 		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
