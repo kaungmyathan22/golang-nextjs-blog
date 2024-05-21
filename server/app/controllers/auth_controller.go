@@ -3,6 +3,7 @@ package controllers
 import (
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	hash "github.com/kaungmyathan22/golang-nextjs-blog/app"
@@ -10,17 +11,15 @@ import (
 	"github.com/kaungmyathan22/golang-nextjs-blog/app/logger"
 	"github.com/kaungmyathan22/golang-nextjs-blog/app/models/apis"
 	models "github.com/kaungmyathan22/golang-nextjs-blog/app/models/domain"
-	"github.com/kaungmyathan22/golang-nextjs-blog/app/services"
 	jwt "github.com/kaungmyathan22/golang-nextjs-blog/app/utils"
 	"gorm.io/gorm"
 )
 
 type AuthControllerImpl struct {
-	SVC *services.AuthServiceImpl
 }
 
-func NewAuthControllerImpl(svc *services.AuthServiceImpl) *AuthControllerImpl {
-	return &AuthControllerImpl{SVC: svc}
+func NewAuthControllerImpl() *AuthControllerImpl {
+	return &AuthControllerImpl{}
 }
 
 func (ctrl *AuthControllerImpl) Login(c *gin.Context) {
@@ -89,18 +88,28 @@ func (ctrl *AuthControllerImpl) Register(c *gin.Context) {
 	hashedPassword, err := hash.HashPassword(payload.Password)
 	payload.Password = hashedPassword
 	if err != nil {
+		logger.Error(err.Error())
 		c.JSON(http.StatusInternalServerError, apis.APIResponse{
 			Status:  http.StatusInternalServerError,
-			Message: "error while hashing password",
+			Message: "something went wrong",
 		})
 		return
 	}
-	if err = ctrl.SVC.Register(payload); err != nil {
-		logger.Error(err.Error())
-		c.JSON(http.StatusConflict, apis.APIResponse{
-			Status:  http.StatusConflict,
-			Message: err.Error(),
-		})
+	user := models.User{Name: payload.Name, Password: payload.Password, Email: payload.Email}
+	result := database.DB.Create(&user)
+	if err := result.Error; err != nil {
+		if strings.Contains(err.Error(), "23505") {
+			c.JSON(http.StatusConflict, apis.APIResponse{
+				Status:  http.StatusConflict,
+				Message: "user with given email address already existed.",
+			})
+		} else {
+			logger.Error(err.Error())
+			c.JSON(http.StatusInternalServerError, apis.APIResponse{
+				Status:  http.StatusInternalServerError,
+				Message: "something went wrong",
+			})
+		}
 		return
 	}
 	c.JSON(http.StatusOK, apis.APIResponse{
