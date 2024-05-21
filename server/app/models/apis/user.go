@@ -1,4 +1,4 @@
-package models
+package apis
 
 type LoginPayload struct {
 	Email    string `json:"email" binding:"required"`
@@ -10,7 +10,6 @@ type LoginResult struct {
 }
 
 type RegisterPayload struct {
-	Username string `json:"username" binding:"required"`
 	Email    string `json:"email" binding:"required"`
 	Name     string `json:"name" binding:"required"`
 	Password string `json:"password" binding:"required"`

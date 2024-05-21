@@ -1,12 +1,12 @@
 package interfaces
 
-import models "github.com/kaungmyathan22/golang-nextjs-blog/app/models/apis"
+import "github.com/kaungmyathan22/golang-nextjs-blog/app/models/apis"
 
 type AuthService interface {
-	Login(payload models.LoginPayload) (models.LoginResult, error)
-	Register(payload models.RegisterPayload) (models.MessageResponse, error)
-	ChangePassword(payload models.ChangePasswordPayload) (string, error)
-	ForgotPassword(payload models.ForgotPasswordPayload) (string, error)
-	ResetPassword(payload models.ResetPasswordPayload) (string, error)
+	Login(payload apis.LoginPayload) (apis.LoginResult, error)
+	Register(payload apis.RegisterPayload) (apis.MessageResponse, error)
+	ChangePassword(payload apis.ChangePasswordPayload) (string, error)
+	ForgotPassword(payload apis.ForgotPasswordPayload) (string, error)
+	ResetPassword(payload apis.ResetPasswordPayload) (string, error)
 	RefreshToken() (string, error)
 }
