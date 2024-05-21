@@ -28,7 +28,10 @@ func (ctrl *AuthControllerImpl) Login(c *gin.Context) {
 		fmt.Println(err.Error())
 		c.JSON(http.StatusBadRequest, apis.APIResponse{
 			Status:  http.StatusBadRequest,
-			Message: "invalid body payload.",
+			Message: "StatusBadRequest",
+			Data: map[string]string{
+				"error": "invalid body payload.",
+			},
 		})
 		return
 	}
@@ -38,12 +41,18 @@ func (ctrl *AuthControllerImpl) Login(c *gin.Context) {
 		if result.Error == gorm.ErrRecordNotFound {
 			c.JSON(http.StatusBadRequest, apis.APIResponse{
 				Status:  http.StatusBadRequest,
-				Message: "invalid email / password.",
+				Message: "StatusBadRequest",
+				Data: map[string]string{
+					"message": "invalid email / password.",
+				},
 			})
 		} else {
 			c.JSON(http.StatusInternalServerError, apis.APIResponse{
 				Status:  http.StatusInternalServerError,
-				Message: "something went wrong",
+				Message: "StatusInternalServerError",
+				Data: map[string]string{
+					"message": "Something went wrong",
+				},
 			})
 		}
 		return
@@ -51,21 +60,28 @@ func (ctrl *AuthControllerImpl) Login(c *gin.Context) {
 	if err := hash.ComparePasswordAndHash(payload.Password, user.Password); err != nil {
 		c.JSON(http.StatusBadRequest, apis.APIResponse{
 			Status:  http.StatusBadRequest,
-			Message: "invalid email / password.",
+			Message: "StatusBadRequest",
+			Data: map[string]string{
+				"message": "invalid email / password.",
+			},
 		})
 		return
 	}
 	token, err := jwt.SignJwtAuthenticationToken(int(user.ID))
 	if err != nil {
 		fmt.Println(err)
-		c.JSON(http.StatusBadRequest, apis.APIResponse{
-			Status:  http.StatusBadRequest,
-			Message: "error signing token.",
+		c.JSON(http.StatusInternalServerError, apis.APIResponse{
+			Status:  http.StatusInternalServerError,
+			Message: "StatusInternalServerError",
+			Data: map[string]string{
+				"message": "Something went wrong",
+			},
 		})
 		return
 	}
 	c.JSON(http.StatusOK, apis.APIResponse{
-		Status: http.StatusOK,
+		Status:  http.StatusOK,
+		Message: "success",
 		Data: map[string]any{
 			"token": token,
 			"user":  user,
@@ -80,7 +96,10 @@ func (ctrl *AuthControllerImpl) Register(c *gin.Context) {
 		fmt.Println(err)
 		response := apis.APIResponse{
 			Status:  http.StatusBadRequest,
-			Message: "invalid request payload.",
+			Message: "StatusBadRequest",
+			Data: map[string]any{
+				"message": "invalid request payload.",
+			},
 		}
 		c.JSON(http.StatusBadRequest, response)
 		return
@@ -91,7 +110,10 @@ func (ctrl *AuthControllerImpl) Register(c *gin.Context) {
 		logger.Error(err.Error())
 		c.JSON(http.StatusInternalServerError, apis.APIResponse{
 			Status:  http.StatusInternalServerError,
-			Message: "something went wrong",
+			Message: "StatusInternalServerError",
+			Data: map[string]any{
+				"message": "something went wrong",
+			},
 		})
 		return
 	}
@@ -101,20 +123,35 @@ func (ctrl *AuthControllerImpl) Register(c *gin.Context) {
 		if strings.Contains(err.Error(), "23505") {
 			c.JSON(http.StatusConflict, apis.APIResponse{
 				Status:  http.StatusConflict,
-				Message: "user with given email address already existed.",
+				Message: "StatusConflict",
+				Data: map[string]string{
+					"message": "user with given email address already existed.",
+				},
 			})
 		} else {
 			logger.Error(err.Error())
 			c.JSON(http.StatusInternalServerError, apis.APIResponse{
 				Status:  http.StatusInternalServerError,
-				Message: "something went wrong",
+				Message: "StatusInternalServerError",
+				Data: map[string]string{
+					"message": "something went wrong",
+				},
 			})
 		}
 		return
 	}
 	c.JSON(http.StatusOK, apis.APIResponse{
 		Status:  http.StatusOK,
-		Message: "Registration successful. Please login!",
+		Message: "success",
+		Data: map[string]any{
+			"message": "Registration successful. Please login!",
+		},
+	})
+}
+
+func (ctrl *AuthControllerImpl) Me(c *gin.Context) {
+	c.JSON(200, gin.H{
+		"message": "hola",
 	})
 }
 
