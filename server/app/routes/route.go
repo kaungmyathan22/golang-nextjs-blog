@@ -3,13 +3,14 @@ package routes
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/kaungmyathan22/golang-nextjs-blog/app/controllers"
+	"github.com/kaungmyathan22/golang-nextjs-blog/app/services"
 )
 
 func SetupRoute(r *gin.Engine) {
 	apiV1Group := r.Group("/api/v1")
 
-	authHandler := controllers.NewAuthControllerImpl()
-	authRoute := apiV1Group.Group("/auth")
+	authHandler := controllers.NewAuthControllerImpl(&services.AuthServiceImpl{})
+	authRoute := apiV1Group.Group("/authentication")
 	authRoute.POST("/register", authHandler.Register)
 	authRoute.POST("/login", authHandler.Login)
 	authRoute.POST("/refresh-token", authHandler.RefreshToken)
