@@ -1,18 +1,18 @@
 package config
 
 import (
-	"database/sql"
 	"fmt"
-	"log"
 
-	"github.com/kaungmyathan22/golang-nextjs-blog/app/database"
+	"github.com/kaungmyathan22/golang-nextjs-blog/app/logger"
 	_ "github.com/lib/pq"
 	"github.com/spf13/viper"
 )
 
 type Config struct {
-	PORT   string
-	DB_URL string
+	PORT                   string
+	DB_URL                 string
+	JWT_TOKEN_SECRET       string
+	JWTExpirationInSeconds int
 }
 
 var ConfigInstance *Config
@@ -32,23 +32,5 @@ func LoadConfig() {
 		fmt.Printf("Unable to decode into struct, %v", err)
 		return
 	}
-}
-
-func ConnectToDatabase() error {
-	const postgresURL = "postgres://admin:admin@localhost:5432/sqlc?sslmode=disable"
-	db, err := sql.Open("postgres", postgresURL)
-	if err != nil {
-		log.Println("Something went wrong while connecting to database!!")
-		panic(err)
-	}
-	defer db.Close()
-	err = db.Ping()
-	if err != nil {
-		log.Println("Something went wrong while pinging to database!!")
-		panic(err)
-	}
-	// ctx := context.Background()
-	database.New(db)
-	// queries := database.New(db)
-	return nil
+	logger.Init()
 }
