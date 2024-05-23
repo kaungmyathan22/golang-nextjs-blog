@@ -29,24 +29,16 @@ func SignJwtAuthenticationToken(sub int) (string, error) {
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	tokenString, err := token.SignedString(secretKey)
-
-	claims := JwtCustomClaims{
-		Exp:       jwt.NewNumericDate(time.Now().Add(expiration)),
-		ID:        strconv.Itoa(sub),
-		IssuedAt:  jwt.NewNumericDate(time.Now()),
-		NotBefore: jwt.NewNumericDate(time.Now()),
-		Issuer:    "golang-nextjs-blog",
-	}
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	tokenString, err := token.SignedString([]byte(config.ConfigInstance.JWT_TOKEN_SECRET))
 	return tokenString, err
 }
 
-func ValidateJwtAuthenticationToken(tokenString string) (*jwt.RegisteredClaims, error) {
-	fmt.Println(tokenString)
-	fmt.Println("tokenString")
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+func ValidateJwtAuthenticationToken(tokenString string) (*JwtCustomClaims, error) {
+	if tokenString == "" {
+		return nil, fmt.Errorf("authentication token is required")
+	}
+	claims := &JwtCustomClaims{}
+	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
 		return []byte(config.ConfigInstance.JWT_TOKEN_SECRET), nil
 	})
 	if err != nil {
@@ -55,9 +47,10 @@ func ValidateJwtAuthenticationToken(tokenString string) (*jwt.RegisteredClaims, 
 	if !token.Valid {
 		return nil, fmt.Errorf("invalid token")
 	}
-	claims, ok := token.Claims.(jwt.RegisteredClaims)
-	if !ok {
-		return nil, fmt.Errorf("error while parsing token to register claims")
+
+	if time.Now().Unix() > claims.Exp {
+		return nil, fmt.Errorf("access token expired")
 	}
-	return &claims, err
+
+	return claims, err
 }
