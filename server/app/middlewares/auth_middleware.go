@@ -42,7 +42,7 @@ func IsAuthenticated() gin.HandlerFunc {
 		}
 
 		var user *models.User
-		result := database.DB.First(&user, claims.ID)
+		result := database.DB.First(&user, claims.Sub)
 		if result.Error != nil {
 			response := apis.APIResponse{
 				Status:  http.StatusUnauthorized,
