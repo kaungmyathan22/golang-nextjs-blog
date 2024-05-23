@@ -150,8 +150,19 @@ func (ctrl *AuthControllerImpl) Register(c *gin.Context) {
 }
 
 func (ctrl *AuthControllerImpl) Me(c *gin.Context) {
-	c.JSON(200, gin.H{
-		"message": "hola",
+	user, ok := c.Get("user")
+	if !ok {
+		c.JSON(http.StatusUnauthorized, apis.APIResponse{
+			Status:  http.StatusUnauthorized,
+			Message: "unauthorized",
+			Data:    nil,
+		})
+		return
+	}
+	c.JSON(http.StatusOK, apis.APIResponse{
+		Status:  http.StatusOK,
+		Message: "success",
+		Data:    user,
 	})
 }
 
