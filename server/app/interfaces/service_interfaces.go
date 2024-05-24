@@ -3,7 +3,7 @@ package interfaces
 import "github.com/kaungmyathan22/golang-nextjs-blog/app/models/apis"
 
 type AuthService interface {
-	Login(payload apis.LoginPayload) (apis.LoginResult, error)
+	Login(payload apis.LoginPayload) (apis.LoginResponse, error)
 	Register(payload apis.RegisterPayload) (apis.MessageResponse, error)
 	ChangePassword(payload apis.ChangePasswordPayload) (string, error)
 	ForgotPassword(payload apis.ForgotPasswordPayload) (string, error)
