@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/asaskevich/govalidator"
 	"github.com/gin-gonic/gin"
 	"github.com/kaungmyathan22/golang-nextjs-blog/app/config"
 	"github.com/kaungmyathan22/golang-nextjs-blog/app/database"
@@ -11,6 +12,8 @@ import (
 func main() {
 	// load env
 	config.LoadConfig()
+	govalidator.SetFieldsRequiredByDefault(true)
+	govalidator.TagMap["sixToEightDigitAlphanumericPasswordValidator"] = govalidator.Validator(sixToEightDigitAlphanumericPasswordValidator)
 	err := database.ConnectToDatabase()
 	if err != nil {
 		panic(err)
