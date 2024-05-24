@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/asaskevich/govalidator"
 	"github.com/gin-gonic/gin"
 	hash "github.com/kaungmyathan22/golang-nextjs-blog/app"
 	"github.com/kaungmyathan22/golang-nextjs-blog/app/database"
@@ -26,51 +27,32 @@ func (ctrl *AuthControllerImpl) Login(c *gin.Context) {
 	var payload *apis.LoginPayload
 	if err := c.ShouldBind(&payload); err != nil {
 		fmt.Println(err.Error())
-		c.JSON(http.StatusBadRequest, apis.APIResponse{
-			Status:  http.StatusBadRequest,
-			Message: "StatusBadRequest",
-			Data: map[string]string{
-				"error": "invalid body payload.",
-			},
-		})
+		c.JSON(http.StatusBadRequest, apis.GetStatusBadRequestResponse("invalid body payload."))
+		return
+	}
+	_, err := govalidator.ValidateStruct(payload)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, apis.GetStatusBadRequestResponse(err.Error()))
 		return
 	}
 	var user models.User
 	result := database.DB.First(&user, "email = ?", payload.Email)
 	if result.Error != nil {
 		if result.Error == gorm.ErrRecordNotFound {
-			c.JSON(http.StatusBadRequest, apis.APIResponse{
-				Status:  http.StatusBadRequest,
-				Message: "StatusBadRequest",
-				Data: map[string]string{
-					"message": "invalid email / password.",
-				},
-			})
+			c.JSON(http.StatusBadRequest, apis.GetStatusBadRequestResponse("invalid email / password."))
 		} else {
 			c.JSON(http.StatusInternalServerError, apis.InternalServerErrorResponse)
 		}
 		return
 	}
 	if err := hash.ComparePasswordAndHash(payload.Password, user.Password); err != nil {
-		c.JSON(http.StatusBadRequest, apis.APIResponse{
-			Status:  http.StatusBadRequest,
-			Message: "StatusBadRequest",
-			Data: map[string]string{
-				"message": "invalid email / password.",
-			},
-		})
+		c.JSON(http.StatusBadRequest, apis.GetStatusBadRequestResponse("invalid email / password."))
 		return
 	}
 	token, err := jwt.SignJwtAuthenticationToken(int(user.ID))
 	if err != nil {
 		fmt.Println(err)
-		c.JSON(http.StatusInternalServerError, apis.APIResponse{
-			Status:  http.StatusInternalServerError,
-			Message: "StatusInternalServerError",
-			Data: map[string]string{
-				"message": "Something went wrong",
-			},
-		})
+		c.JSON(http.StatusInternalServerError, apis.InternalServerErrorResponse)
 		return
 	}
 	c.JSON(http.StatusOK, apis.APIResponse{
@@ -85,30 +67,23 @@ func (ctrl *AuthControllerImpl) Login(c *gin.Context) {
 
 func (ctrl *AuthControllerImpl) Register(c *gin.Context) {
 	// ctrl.SVC.Register()
-	var payload *apis.RegisterPayload
+	var payload apis.RegisterPayload
 	if err := c.ShouldBind(&payload); err != nil {
-		fmt.Println(err)
-		response := apis.APIResponse{
-			Status:  http.StatusBadRequest,
-			Message: "StatusBadRequest",
-			Data: map[string]any{
-				"message": "invalid request payload.",
-			},
-		}
-		c.JSON(http.StatusBadRequest, response)
+		logger.Error(err.Error())
+		c.JSON(http.StatusBadRequest, apis.GetStatusBadRequestResponse("invalid request payload"))
+
+		return
+	}
+	_, err := govalidator.ValidateStruct(payload)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, apis.GetStatusBadRequestResponse(err.Error()))
 		return
 	}
 	hashedPassword, err := hash.HashPassword(payload.Password)
 	payload.Password = hashedPassword
 	if err != nil {
 		logger.Error(err.Error())
-		c.JSON(http.StatusInternalServerError, apis.APIResponse{
-			Status:  http.StatusInternalServerError,
-			Message: "StatusInternalServerError",
-			Data: map[string]any{
-				"message": "something went wrong",
-			},
-		})
+		c.JSON(http.StatusInternalServerError, apis.InternalServerErrorResponse)
 		return
 	}
 	user := models.User{Name: payload.Name, Password: payload.Password, Email: payload.Email}
@@ -124,13 +99,7 @@ func (ctrl *AuthControllerImpl) Register(c *gin.Context) {
 			})
 		} else {
 			logger.Error(err.Error())
-			c.JSON(http.StatusInternalServerError, apis.APIResponse{
-				Status:  http.StatusInternalServerError,
-				Message: "StatusInternalServerError",
-				Data: map[string]string{
-					"message": "something went wrong",
-				},
-			})
+			c.JSON(http.StatusInternalServerError, apis.InternalServerErrorResponse)
 		}
 		return
 	}
@@ -159,16 +128,15 @@ func (ctrl *AuthControllerImpl) Me(c *gin.Context) {
 func (ctrl *AuthControllerImpl) ChangePassword(c *gin.Context) {
 	var payload *apis.ChangePasswordPayload
 	if err := c.ShouldBind(&payload); err != nil {
-		fmt.Println(err)
-		response := apis.BadRequestResponse
-		response.Data = map[string]any{
-			"error": "invalid request payload.",
-		}
-		c.JSON(http.StatusBadRequest, response)
+		c.JSON(http.StatusBadRequest, apis.GetStatusBadRequestResponse("invalid request payload."))
+		return
+	}
+	_, err := govalidator.ValidateStruct(payload)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, apis.GetStatusBadRequestResponse(err.Error()))
 		return
 	}
 	rawUser, ok := c.Get("user")
-
 	if !ok {
 		c.JSON(http.StatusUnauthorized, apis.UnauthorizedResponse)
 		return
@@ -179,15 +147,11 @@ func (ctrl *AuthControllerImpl) ChangePassword(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, apis.InternalServerErrorResponse)
 	}
 	if err := hash.ComparePasswordAndHash(payload.OldPassword, user.Password); err != nil {
-		res := apis.BadRequestResponse
-		res.Data = map[string]string{"message": "invalid old password"}
-		c.JSON(http.StatusBadRequest, res)
+		c.JSON(http.StatusBadRequest, apis.GetStatusBadRequestResponse("invalid old password"))
 		return
 	}
 	if err := hash.ComparePasswordAndHash(payload.NewPassword, user.Password); err == nil {
-		res := apis.BadRequestResponse
-		res.Data = map[string]string{"message": "new password can't be the same with old password"}
-		c.JSON(http.StatusBadRequest, res)
+		c.JSON(http.StatusBadRequest, apis.GetStatusBadRequestResponse("new password can't be the same with old password"))
 		return
 	}
 	hashedNewPassword, err := hash.HashPassword(payload.NewPassword)
@@ -207,7 +171,6 @@ func (ctrl *AuthControllerImpl) ChangePassword(c *gin.Context) {
 	c.JSON(200, apis.GetStatusAcceptedResponse(map[string]string{
 		"message": "successfully updated the password.",
 	}))
-	return
 }
 
 func (ctrl *AuthControllerImpl) ForgotPassword(c *gin.Context) {
