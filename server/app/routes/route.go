@@ -18,6 +18,7 @@ func SetupRoute(r *gin.Engine) {
 	authRoute.POST("/forgot-password", authHandler.ForgotPassword)
 	authRoute.POST("/reset-password", authHandler.ResetPassword)
 
+	authRoute.POST("/change-password", middlewares.IsAuthenticated(), authHandler.ChangePassword)
 	authRoute.GET("/me", middlewares.IsAuthenticated(), authHandler.Me)
 
 	apiV1Group.GET("/ping", func(c *gin.Context) {
