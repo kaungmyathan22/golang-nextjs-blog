@@ -47,13 +47,7 @@ func (ctrl *AuthControllerImpl) Login(c *gin.Context) {
 				},
 			})
 		} else {
-			c.JSON(http.StatusInternalServerError, apis.APIResponse{
-				Status:  http.StatusInternalServerError,
-				Message: "StatusInternalServerError",
-				Data: map[string]string{
-					"message": "Something went wrong",
-				},
-			})
+			c.JSON(http.StatusInternalServerError, apis.InternalServerErrorResponse)
 		}
 		return
 	}
@@ -152,11 +146,7 @@ func (ctrl *AuthControllerImpl) Register(c *gin.Context) {
 func (ctrl *AuthControllerImpl) Me(c *gin.Context) {
 	user, ok := c.Get("user")
 	if !ok {
-		c.JSON(http.StatusUnauthorized, apis.APIResponse{
-			Status:  http.StatusUnauthorized,
-			Message: "unauthorized",
-			Data:    nil,
-		})
+		c.JSON(http.StatusUnauthorized, apis.UnauthorizedResponse)
 		return
 	}
 	c.JSON(http.StatusOK, apis.APIResponse{
@@ -167,9 +157,57 @@ func (ctrl *AuthControllerImpl) Me(c *gin.Context) {
 }
 
 func (ctrl *AuthControllerImpl) ChangePassword(c *gin.Context) {
-	c.JSON(200, map[string]string{
-		"message": "ChangePassword",
-	})
+	var payload *apis.ChangePasswordPayload
+	if err := c.ShouldBind(&payload); err != nil {
+		fmt.Println(err)
+		response := apis.BadRequestResponse
+		response.Data = map[string]any{
+			"error": "invalid request payload.",
+		}
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+	rawUser, ok := c.Get("user")
+
+	if !ok {
+		c.JSON(http.StatusUnauthorized, apis.UnauthorizedResponse)
+		return
+	}
+	user, ok := rawUser.(*models.User)
+	if !ok {
+		logger.Error("error while user type conversion")
+		c.JSON(http.StatusInternalServerError, apis.InternalServerErrorResponse)
+	}
+	if err := hash.ComparePasswordAndHash(payload.OldPassword, user.Password); err != nil {
+		res := apis.BadRequestResponse
+		res.Data = map[string]string{"message": "invalid old password"}
+		c.JSON(http.StatusBadRequest, res)
+		return
+	}
+	if err := hash.ComparePasswordAndHash(payload.NewPassword, user.Password); err == nil {
+		res := apis.BadRequestResponse
+		res.Data = map[string]string{"message": "new password can't be the same with old password"}
+		c.JSON(http.StatusBadRequest, res)
+		return
+	}
+	hashedNewPassword, err := hash.HashPassword(payload.NewPassword)
+	if err != nil {
+		logger.Error("error while hashing new password")
+		c.JSON(http.StatusInternalServerError, apis.InternalServerErrorResponse)
+		return
+	}
+	user.Password = hashedNewPassword
+	result := database.DB.Save(&user)
+	if err := result.Error; err != nil {
+		logger.Error("error while saving user new password")
+		logger.Error(err.Error())
+		c.JSON(http.StatusInternalServerError, apis.InternalServerErrorResponse)
+		return
+	}
+	c.JSON(200, apis.GetStatusAcceptedResponse(map[string]string{
+		"message": "successfully updated the password.",
+	}))
+	return
 }
 
 func (ctrl *AuthControllerImpl) ForgotPassword(c *gin.Context) {
