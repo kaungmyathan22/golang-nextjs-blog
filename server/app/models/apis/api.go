@@ -32,3 +32,13 @@ func GetStatusAcceptedResponse(data any) *APIResponse {
 		Data:    data,
 	}
 }
+
+func GetStatusBadRequestResponse(data any) *APIResponse {
+	return &APIResponse{
+		Message: "error",
+		Status:  http.StatusBadRequest,
+		Data: map[string]any{
+			"error": data,
+		},
+	}
+}
