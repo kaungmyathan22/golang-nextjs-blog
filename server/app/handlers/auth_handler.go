@@ -249,9 +249,36 @@ func (ctrl *AuthControllerImpl) ForgotPassword(c *gin.Context) {
 }
 
 func (ctrl *AuthControllerImpl) ResetPassword(c *gin.Context) {
-	c.JSON(200, map[string]string{
-		"message": "ResetPassword",
-	})
+	var payload *apis.ResetPasswordPayload
+	if err := c.ShouldBind(&payload); err != nil {
+		c.JSON(http.StatusBadRequest, apis.GetStatusBadRequestResponse("invalid request payload."))
+		return
+	}
+	_, err := govalidator.ValidateStruct(payload)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, apis.GetStatusBadRequestResponse(err.Error()))
+		return
+	}
+	rawUser, ok := c.Get("user")
+	if !ok {
+		c.JSON(http.StatusUnauthorized, apis.UnauthorizedResponse)
+		return
+	}
+	user := rawUser.(*models.User)
+	hashedPassword, err := hash.HashPassword(payload.Password)
+	if err != nil {
+		logger.Error(err.Error())
+		c.JSON(http.StatusUnauthorized, apis.InternalServerErrorResponse)
+		return
+	}
+	user.Password = hashedPassword
+	result := database.DB.Save(&user)
+	if err := result.Error; err != nil {
+		logger.Error(err.Error())
+		c.JSON(http.StatusUnauthorized, apis.InternalServerErrorResponse)
+		return
+	}
+	c.JSON(http.StatusOK, apis.GetSuccessResponse(map[string]string{"message": "Password changed successfully."}))
 }
 
 func (ctrl *AuthControllerImpl) RefreshToken(c *gin.Context) {

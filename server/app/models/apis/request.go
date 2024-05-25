@@ -21,5 +21,5 @@ type ForgotPasswordPayload struct {
 }
 
 type ResetPasswordPayload struct {
-	Email string `json:"email" binding:"required" valid:"email~Please provide valid email address"`
+	Password string `json:"password" binding:"required" valid:"sixToEightDigitAlphanumericPasswordValidator~Password must be between 6 to 8 alphanumeric characters"`
 }

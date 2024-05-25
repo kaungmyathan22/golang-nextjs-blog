@@ -42,3 +42,21 @@ func GetStatusBadRequestResponse(data any) *APIResponse {
 		},
 	}
 }
+
+func GetUnauthorizedResponse(data any) *APIResponse {
+	return &APIResponse{
+		Message: "error",
+		Status:  http.StatusUnauthorized,
+		Data: map[string]any{
+			"error": data,
+		},
+	}
+}
+
+func GetSuccessResponse(data any) *APIResponse {
+	return &APIResponse{
+		Status:  http.StatusOK,
+		Message: "success",
+		Data:    data,
+	}
+}
