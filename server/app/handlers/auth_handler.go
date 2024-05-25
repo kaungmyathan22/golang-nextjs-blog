@@ -17,10 +17,13 @@ import (
 )
 
 type AuthControllerImpl struct {
+	EmailHandler *EmailHandlerImpl
 }
 
-func NewAuthControllerImpl() *AuthControllerImpl {
-	return &AuthControllerImpl{}
+func NewAuthControllerImpl(emailHandler *EmailHandlerImpl) *AuthControllerImpl {
+	return &AuthControllerImpl{
+		EmailHandler: emailHandler,
+	}
 }
 
 func (ctrl *AuthControllerImpl) Login(c *gin.Context) {
@@ -66,7 +69,6 @@ func (ctrl *AuthControllerImpl) Login(c *gin.Context) {
 }
 
 func (ctrl *AuthControllerImpl) Register(c *gin.Context) {
-	// ctrl.SVC.Register()
 	var payload apis.RegisterPayload
 	if err := c.ShouldBind(&payload); err != nil {
 		logger.Error(err.Error())
@@ -103,6 +105,14 @@ func (ctrl *AuthControllerImpl) Register(c *gin.Context) {
 		}
 		return
 	}
+
+	go func() {
+		err := ctrl.EmailHandler.SendWelcomeEmail(&apis.WelcomeEmail{Name: payload.Name, To: payload.Email})
+		if err != nil {
+			logger.Error(err.Error())
+		}
+	}()
+
 	c.JSON(http.StatusOK, apis.APIResponse{
 		Status:  http.StatusOK,
 		Message: "success",
@@ -174,6 +184,17 @@ func (ctrl *AuthControllerImpl) ChangePassword(c *gin.Context) {
 }
 
 func (ctrl *AuthControllerImpl) ForgotPassword(c *gin.Context) {
+	var payload *apis.ForgotPasswordPayload
+	if err := c.ShouldBind(&payload); err != nil {
+		c.JSON(http.StatusBadRequest, apis.GetStatusBadRequestResponse("invalid request payload."))
+		return
+	}
+	_, err := govalidator.ValidateStruct(payload)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, apis.GetStatusBadRequestResponse(err.Error()))
+		return
+	}
+
 	c.JSON(200, map[string]string{
 		"message": "ForgotPassword",
 	})
