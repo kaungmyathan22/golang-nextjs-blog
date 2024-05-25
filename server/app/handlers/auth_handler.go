@@ -59,6 +59,7 @@ func (ctrl *AuthControllerImpl) Login(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, apis.InternalServerErrorResponse)
 		return
 	}
+	c.SetCookie("Authorization", token, 3600, "/", "localhost", true, true)
 	c.JSON(http.StatusOK, apis.APIResponse{
 		Status:  http.StatusOK,
 		Message: "success",

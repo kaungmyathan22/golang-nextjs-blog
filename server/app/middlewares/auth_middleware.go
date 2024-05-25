@@ -16,19 +16,25 @@ import (
 
 func IsAuthenticated() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		tokenString := ctx.GetHeader("Authorization")
-		logger.Info(fmt.Sprintf("token string is %s", tokenString))
-		if tokenString == "" {
-			response := apis.APIResponse{
-				Status:  http.StatusUnauthorized,
-				Message: "Unauthorized",
-				Data:    nil,
+		token := ""
+		cookie, err := ctx.Cookie("Authorization")
+		if err != nil {
+			tokenString := ctx.GetHeader("Authorization")
+			logger.Info(fmt.Sprintf("token string is %s", tokenString))
+			if tokenString == "" {
+				response := apis.APIResponse{
+					Status:  http.StatusUnauthorized,
+					Message: "Unauthorized",
+					Data:    nil,
+				}
+				ctx.JSON(http.StatusUnauthorized, response)
+				ctx.Abort()
+				return
 			}
-			ctx.JSON(http.StatusUnauthorized, response)
-			ctx.Abort()
-			return
+			token = strings.Split(tokenString, "Bearer ")[1]
+		} else {
+			token = cookie
 		}
-		token := strings.Split(tokenString, "Bearer ")[1]
 		claims, err := jwt.ValidateJwtAuthenticationToken(token)
 		if err != nil {
 			logger.Error(err.Error())
