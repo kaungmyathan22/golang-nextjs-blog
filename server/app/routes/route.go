@@ -8,8 +8,8 @@ import (
 
 func SetupRoute(r *gin.Engine) {
 	apiV1Group := r.Group("/api/v1")
-
-	authHandler := handlers.NewAuthControllerImpl()
+	emailHandler := handlers.NewEmailHandler()
+	authHandler := handlers.NewAuthControllerImpl(emailHandler)
 	authRoute := apiV1Group.Group("/authentication")
 	authRoute.POST("/register", authHandler.Register)
 
@@ -20,7 +20,6 @@ func SetupRoute(r *gin.Engine) {
 
 	authRoute.POST("/change-password", middlewares.IsAuthenticated(), authHandler.ChangePassword)
 	authRoute.GET("/me", middlewares.IsAuthenticated(), authHandler.Me)
-
 	apiV1Group.GET("/ping", func(c *gin.Context) {
 		c.JSON(200, gin.H{
 			"message": "pong",
