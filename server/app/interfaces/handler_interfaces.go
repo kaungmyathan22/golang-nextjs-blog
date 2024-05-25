@@ -10,3 +10,11 @@ type AuthController interface {
 	ResetPassword(ctx *gin.Context) error
 	RefreshToken(ctx *gin.Context) error
 }
+
+type PostHandler interface {
+	CreatePost(ctx *gin.Context) error
+	UpdatePost(ctx *gin.Context) error
+	DeletePost(ctx *gin.Context) error
+	GetPosts(ctx *gin.Context) error
+	GetPost(ctx *gin.Context) error
+}
