@@ -9,6 +9,7 @@ import (
 	"github.com/asaskevich/govalidator"
 	"github.com/gin-gonic/gin"
 	hash "github.com/kaungmyathan22/golang-nextjs-blog/app"
+	"github.com/kaungmyathan22/golang-nextjs-blog/app/config"
 	"github.com/kaungmyathan22/golang-nextjs-blog/app/database"
 	"github.com/kaungmyathan22/golang-nextjs-blog/app/logger"
 	"github.com/kaungmyathan22/golang-nextjs-blog/app/models/apis"
@@ -59,7 +60,7 @@ func (ctrl *AuthControllerImpl) Login(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, apis.InternalServerErrorResponse)
 		return
 	}
-	c.SetCookie("Authorization", token, 3600, "/", "localhost", true, true)
+	c.SetCookie("Authorization", token, config.ConfigInstance.JWTExpirationInSeconds, "/", "localhost", true, true)
 	c.JSON(http.StatusOK, apis.APIResponse{
 		Status:  http.StatusOK,
 		Message: "success",
@@ -286,4 +287,9 @@ func (ctrl *AuthControllerImpl) RefreshToken(c *gin.Context) {
 	c.JSON(200, map[string]string{
 		"message": "RefreshToken",
 	})
+}
+
+func (ctrl *AuthControllerImpl) Logout(c *gin.Context) {
+	c.SetCookie("Authorization", "", 0, "/", "localhost", true, true)
+	c.JSON(200, apis.GetSuccessResponse(gin.H{"message": "Successfully logged out."}))
 }

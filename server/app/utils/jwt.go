@@ -21,7 +21,7 @@ const UserKey contextKey = "userID"
 
 func SignJwtAuthenticationToken(sub int) (string, error) {
 	fmt.Println(config.ConfigInstance.JWT_TOKEN_SECRET)
-	expiration := time.Now().Add(1 * time.Hour)
+	expiration := time.Now().Add(time.Duration(config.ConfigInstance.JWTExpirationInSeconds) * time.Second)
 	claims := JwtCustomClaims{
 		Sub: strconv.Itoa(sub),
 		Iat: time.Now().Unix(),

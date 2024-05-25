@@ -17,6 +17,7 @@ func SetupRoute(r *gin.Engine) {
 	authRoute.POST("/refresh-token", authHandler.RefreshToken)
 	authRoute.POST("/forgot-password", authHandler.ForgotPassword)
 	authRoute.POST("/reset-password", middlewares.IsPasswordResetTokenValid(), authHandler.ResetPassword)
+	authRoute.GET("/logout", authHandler.Logout)
 
 	authRoute.POST("/change-password", middlewares.IsAuthenticated(), authHandler.ChangePassword)
 	authRoute.GET("/me", middlewares.IsAuthenticated(), authHandler.Me)

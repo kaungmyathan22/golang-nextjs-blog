@@ -11,6 +11,7 @@ type AuthController interface {
 	ForgotPassword(ctx *gin.Context) error
 	ResetPassword(ctx *gin.Context) error
 	RefreshToken(ctx *gin.Context) error
+	Logout(ctx *gin.Context) error
 }
 
 type PostHandler interface {
