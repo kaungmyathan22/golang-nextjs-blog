@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/asaskevich/govalidator"
 	"github.com/gin-gonic/gin"
@@ -12,7 +13,7 @@ import (
 	"github.com/kaungmyathan22/golang-nextjs-blog/app/logger"
 	"github.com/kaungmyathan22/golang-nextjs-blog/app/models/apis"
 	models "github.com/kaungmyathan22/golang-nextjs-blog/app/models/domain"
-	jwt "github.com/kaungmyathan22/golang-nextjs-blog/app/utils"
+	"github.com/kaungmyathan22/golang-nextjs-blog/app/utils"
 	"gorm.io/gorm"
 )
 
@@ -52,7 +53,7 @@ func (ctrl *AuthControllerImpl) Login(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, apis.GetStatusBadRequestResponse("invalid email / password."))
 		return
 	}
-	token, err := jwt.SignJwtAuthenticationToken(int(user.ID))
+	token, err := utils.SignJwtAuthenticationToken(int(user.ID))
 	if err != nil {
 		fmt.Println(err)
 		c.JSON(http.StatusInternalServerError, apis.InternalServerErrorResponse)
@@ -194,9 +195,56 @@ func (ctrl *AuthControllerImpl) ForgotPassword(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, apis.GetStatusBadRequestResponse(err.Error()))
 		return
 	}
+	var user *models.User
+	result := database.DB.First(&user, "email = ?", payload.Email)
 
-	c.JSON(200, map[string]string{
-		"message": "ForgotPassword",
+	if err = result.Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			c.JSON(http.StatusBadRequest, apis.GetStatusBadRequestResponse("Given email address not found in the database.."))
+		} else {
+			logger.Error(err.Error())
+			c.JSON(http.StatusBadRequest, apis.InternalServerErrorResponse)
+		}
+		return
+	}
+	randString, err := utils.GenerateRandomString(20)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, apis.InternalServerErrorResponse)
+		return
+	}
+	result = database.DB.Delete(&models.Token{}, models.Token{UserID: user.ID, Tokentype: models.PasswordReset})
+	if err := result.Error; err != nil {
+		if err != gorm.ErrRecordNotFound {
+			logger.Error(err.Error())
+			c.JSON(http.StatusBadRequest, apis.InternalServerErrorResponse)
+			return
+		} else {
+			logger.Info("error record not found.")
+		}
+	}
+	token := models.Token{
+		Token:     randString,
+		UserID:    user.ID,
+		ExpiredAt: time.Now().Add(24 * time.Hour),
+		Tokentype: models.PasswordReset,
+	}
+	result = database.DB.Create(&token)
+	if err := result.Error; err != nil {
+		logger.Error(err.Error())
+		c.JSON(http.StatusBadRequest, apis.InternalServerErrorResponse)
+		return
+	}
+	go func() {
+		if err := ctrl.EmailHandler.SendForgotPasswordEmail(&apis.ForgotPasswordEmail{Email: payload.Email, Code: token.Token}); err != nil {
+			logger.Error(err.Error())
+		}
+	}()
+	c.JSON(200, apis.APIResponse{
+		Status:  http.StatusOK,
+		Message: "success",
+		Data: map[string]string{
+			"message": "An email with passord reset token has been sent to your email address.",
+		},
 	})
 }
 

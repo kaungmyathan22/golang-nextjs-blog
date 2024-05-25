@@ -27,6 +27,9 @@ func ConnectToDatabase() error {
 	if err := db.AutoMigrate(&models.Account{}); err != nil {
 		return err
 	}
+	if err := db.AutoMigrate(&models.Token{}); err != nil {
+		return err
+	}
 	logger.Info("successfully migrated db schema.")
 	DB = db
 	return nil

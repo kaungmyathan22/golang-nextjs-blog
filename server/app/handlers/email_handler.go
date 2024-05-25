@@ -12,13 +12,12 @@ type EmailHandlerImpl struct{}
 func NewEmailHandler() *EmailHandlerImpl {
 	return &EmailHandlerImpl{}
 }
-
-func (handler *EmailHandlerImpl) SendWelcomeEmail(payload *apis.WelcomeEmail) error {
+func sendEmail(to, body, subject string) error {
 	m := gomail.NewMessage()
 	m.SetHeader("From", "no-reply@example.com")
-	m.SetHeader("To", payload.To)
-	m.SetHeader("Subject", "Welcome")
-	m.SetBody("text/html", fmt.Sprintf("<h1>Welcome, %s</h1>", payload.Name))
+	m.SetHeader("To", to)
+	m.SetHeader("Subject", subject)
+	m.SetBody("text/html", body)
 
 	d := gomail.NewDialer("localhost", 1025, "", "")
 
@@ -26,5 +25,21 @@ func (handler *EmailHandlerImpl) SendWelcomeEmail(payload *apis.WelcomeEmail) er
 		return err
 	}
 
+	return nil
+}
+func (handler *EmailHandlerImpl) SendWelcomeEmail(payload *apis.WelcomeEmail) error {
+	body := fmt.Sprintf("Welcome, %s", payload.Name)
+	if err := sendEmail(payload.To, body, "Welcome"); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (handler *EmailHandlerImpl) SendForgotPasswordEmail(payload *apis.ForgotPasswordEmail) error {
+	body := fmt.Sprintf("<h1>Welcome, This is your password reset link %s</h1>", payload.Code)
+	if err := sendEmail(payload.Email, body, "Password Reset"); err != nil {
+		return err
+	}
 	return nil
 }
