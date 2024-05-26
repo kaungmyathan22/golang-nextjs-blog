@@ -24,12 +24,12 @@ type ResetPasswordPayload struct {
 	Password string `json:"password" binding:"required" valid:"sixToEightDigitAlphanumericPasswordValidator~Password must be between 6 to 8 alphanumeric characters"`
 }
 
-type CreatePost struct {
+type CreatePostPayload struct {
 	Title   string `json:"title" binding:"required" valid:"required~Post title is required"`
 	Content string `json:"content" binding:"required" valid:"required~Post content is required"`
 }
 
-type UpdatePost struct {
+type UpdatePostPayload struct {
 	Title   string `json:"title" binding:"required" valid:"required~Post title is required"`
 	Content string `json:"content" binding:"required" valid:"required~Post content is required"`
 }
