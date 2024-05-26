@@ -17,7 +17,9 @@ var UnauthorizedResponse = APIResponse{
 var InternalServerErrorResponse = APIResponse{
 	Message: "error",
 	Status:  http.StatusInternalServerError,
-	Data:    nil,
+	Data: map[string]string{
+		"message": "Something went wrong",
+	},
 }
 var BadRequestResponse = APIResponse{
 	Message: "error",

@@ -7,6 +7,23 @@ import (
 )
 
 func SetupRoute(r *gin.Engine) {
+	SetupAuthRoutes(r)
+	SetupPostRoutes(r)
+}
+
+func SetupPostRoutes(r *gin.Engine) {
+	apiV1Group := r.Group("/api/v1")
+	postRoute := apiV1Group.Group("/posts")
+	postHandler := handlers.NewPostsHandlerImpl()
+	postRoute.POST("/", middlewares.IsAuthenticated(), postHandler.CreatePost)
+	postRoute.POST("/:id", middlewares.IsAuthenticated(), postHandler.UpdatePost)
+	postRoute.DELETE("/:id", middlewares.IsAuthenticated(), postHandler.DeletePost)
+
+	postRoute.GET("/:id", postHandler.GetPost)
+	postRoute.GET("/", postHandler.GetPosts)
+}
+
+func SetupAuthRoutes(r *gin.Engine) {
 	apiV1Group := r.Group("/api/v1")
 	emailHandler := handlers.NewEmailHandler()
 	authHandler := handlers.NewAuthControllerImpl(emailHandler)
@@ -21,10 +38,10 @@ func SetupRoute(r *gin.Engine) {
 
 	authRoute.POST("/change-password", middlewares.IsAuthenticated(), authHandler.ChangePassword)
 	authRoute.GET("/me", middlewares.IsAuthenticated(), authHandler.Me)
+
 	apiV1Group.GET("/ping", func(c *gin.Context) {
 		c.JSON(200, gin.H{
 			"message": "pong",
 		})
 	})
-
 }
