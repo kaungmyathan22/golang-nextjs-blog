@@ -4,19 +4,12 @@ import (
 	"time"
 )
 
-type Category struct {
-	ID        int64
-	Title     string
-	Createdat time.Time
-	Updatedat time.Time
-}
-
 type Post struct {
-	ID         int64
-	Title      string
-	Content    string
-	Createdat  time.Time
-	Updatedat  time.Time
-	Authorid   int
-	Categoryid int
+	ID        int64     `json:"id" gorm:"primarykey"`
+	Title     string    `json:"title"`
+	Content   string    `json:"content"`
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
+	UserID    int64     `json:"userId"`
+	User      User      `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 }
