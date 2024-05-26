@@ -24,10 +24,10 @@ func ConnectToDatabase() error {
 	if err := db.AutoMigrate(&models.User{}); err != nil {
 		return err
 	}
-	if err := db.AutoMigrate(&models.Account{}); err != nil {
+	if err := db.AutoMigrate(&models.Token{}); err != nil {
 		return err
 	}
-	if err := db.AutoMigrate(&models.Token{}); err != nil {
+	if err := db.AutoMigrate(&models.Post{}); err != nil {
 		return err
 	}
 	logger.Info("successfully migrated db schema.")
