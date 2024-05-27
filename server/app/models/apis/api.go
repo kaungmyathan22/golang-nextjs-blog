@@ -62,3 +62,11 @@ func GetSuccessResponse(data any) *APIResponse {
 		Data:    data,
 	}
 }
+
+func GetNotFoundResponse(data any) *APIResponse {
+	return &APIResponse{
+		Status:  http.StatusNotFound,
+		Message: "error",
+		Data:    data,
+	}
+}
