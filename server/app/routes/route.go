@@ -16,7 +16,7 @@ func SetupPostRoutes(r *gin.Engine) {
 	postRoute := apiV1Group.Group("/posts")
 	postHandler := handlers.NewPostsHandlerImpl()
 	postRoute.POST("/", middlewares.IsAuthenticated(), postHandler.CreatePost)
-	postRoute.POST("/:id", middlewares.IsAuthenticated(), postHandler.UpdatePost)
+	postRoute.PATCH("/:id", middlewares.IsAuthenticated(), postHandler.UpdatePost)
 	postRoute.DELETE("/:id", middlewares.IsAuthenticated(), postHandler.DeletePost)
 
 	postRoute.GET("/:id", postHandler.GetPost)

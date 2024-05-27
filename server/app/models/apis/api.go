@@ -70,3 +70,11 @@ func GetNotFoundResponse(data any) *APIResponse {
 		Data:    data,
 	}
 }
+
+func GetForbiddenResponse(data any) *APIResponse {
+	return &APIResponse{
+		Status:  http.StatusForbidden,
+		Message: "error",
+		Data:    data,
+	}
+}
