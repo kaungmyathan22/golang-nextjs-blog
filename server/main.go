@@ -18,6 +18,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	// SeedPostDatabase(database.DB)
 	// setup route
 	r := gin.Default()
 	r.Use(middlewares.LoggerMiddleware())
