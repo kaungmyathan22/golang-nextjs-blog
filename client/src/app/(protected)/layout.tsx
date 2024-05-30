@@ -1,3 +1,4 @@
+"use client";
 import {
   Home,
   LineChart,
@@ -31,9 +32,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { getBreadcumb } from "@/lib/breadcumb";
+import { usePathname } from "next/navigation";
 type ProvidersProps = React.PropsWithChildren<{}>;
 
 const DashboardLayout: React.FC<ProvidersProps> = ({ children }) => {
+  const pathname = usePathname();
+  const breadcrumbs = getBreadcumb(pathname);
   return (
     <div className="flex min-h-screen w-full flex-col bg-muted/40">
       <Sidebar />
@@ -95,21 +100,22 @@ const DashboardLayout: React.FC<ProvidersProps> = ({ children }) => {
           </Sheet>
           <Breadcrumb className="hidden md:flex">
             <BreadcrumbList>
-              <BreadcrumbItem>
-                <BreadcrumbLink asChild>
-                  <Link href="/dashboard">Dashboard</Link>
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator />
-              <BreadcrumbItem>
-                <BreadcrumbLink asChild>
-                  <Link href="/posts">Posts</Link>
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator />
-              <BreadcrumbItem>
-                <BreadcrumbPage>All Posts</BreadcrumbPage>
-              </BreadcrumbItem>
+              {breadcrumbs.map((breadcrumb, index) => (
+                <>
+                  <BreadcrumbItem key={breadcrumb.name}>
+                    {breadcrumb.path ? (
+                      <BreadcrumbLink asChild>
+                        <Link href={breadcrumb.path}>{breadcrumb.name}</Link>
+                      </BreadcrumbLink>
+                    ) : (
+                      <BreadcrumbItem>
+                        <BreadcrumbPage>{breadcrumb.name}</BreadcrumbPage>
+                      </BreadcrumbItem>
+                    )}
+                  </BreadcrumbItem>
+                  {index < breadcrumbs.length - 1 && <BreadcrumbSeparator />}
+                </>
+              ))}
             </BreadcrumbList>
           </Breadcrumb>
           <div className="relative ml-auto flex-1 md:grow-0">

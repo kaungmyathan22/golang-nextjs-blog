@@ -36,11 +36,11 @@ const Sidebar = () => {
         <Tooltip>
           <TooltipTrigger asChild>
             <Link
-              href="#"
+              href="/posts"
               className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent text-accent-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
             >
               <ShoppingCart className="h-5 w-5" />
-              <span className="sr-only">Orders</span>
+              <span className="sr-only">Posts</span>
             </Link>
           </TooltipTrigger>
           <TooltipContent side="right">Orders</TooltipContent>
