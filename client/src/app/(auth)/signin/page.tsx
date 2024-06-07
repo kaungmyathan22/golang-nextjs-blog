@@ -17,9 +17,9 @@ export default function Signin() {
   return (
     <Client>
       <div className="h-screen w-screen grid place-content-center">
-        <Card className="mx-auto max-w-sm">
+        <Card className="mx-auto min-w-96">
           <CardHeader>
-            <CardTitle className="text-2xl">Login</CardTitle>
+            <CardTitle className="text-2xl">Signin</CardTitle>
             <CardDescription>
               Enter your email below to login to your account
             </CardDescription>
@@ -48,7 +48,7 @@ export default function Signin() {
                 <Input id="password" type="password" required />
               </div>
               <Button type="submit" className="w-full">
-                Login
+                Signin
               </Button>
             </div>
             <div className="mt-4 text-center text-sm">

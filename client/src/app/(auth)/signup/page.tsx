@@ -17,7 +17,7 @@ export default function Signup() {
   return (
     <Client>
       <div className="w-screen h-screen grid place-content-center">
-        <Card className="mx-auto max-w-sm">
+        <Card className="mx-auto min-w-96">
           <CardHeader>
             <CardTitle className="text-xl">Sign Up</CardTitle>
             <CardDescription>
@@ -46,11 +46,8 @@ export default function Signup() {
                 <Input id="password" type="password" />
               </div>
               <Button type="submit" className="w-full">
-                Create an account
+                Sign Up
               </Button>
-              {/* <Button variant="outline" className="w-full">
-                Sign up with GitHub
-              </Button> */}
             </div>
             <div className="mt-4 text-center text-sm">
               Already have an account?{" "}

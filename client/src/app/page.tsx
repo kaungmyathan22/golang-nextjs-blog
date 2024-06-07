@@ -14,11 +14,11 @@ export default function Home() {
           <div className="flex items-center gap-4">
             <Link href={"/signin"} className="w-full">
               <Button type="submit" className="w-full">
-                Login
+                Signin
               </Button>
             </Link>
             <Link href={"/signup"} className="w-full">
-              <Button className="w-full">Register</Button>
+              <Button className="w-full">Signup</Button>
             </Link>
           </div>
         </div>

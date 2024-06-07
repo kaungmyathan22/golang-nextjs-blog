@@ -17,7 +17,7 @@ export default function ForgotPassword() {
   return (
     <Client>
       <div className="h-screen w-screen grid place-content-center">
-        <Card className="mx-auto max-w-sm">
+        <Card className="mx-auto min-w-96">
           <CardHeader>
             <CardTitle className="text-2xl">Forgot Password</CardTitle>
             <CardDescription>
