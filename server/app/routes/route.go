@@ -21,6 +21,10 @@ func SetupPostRoutes(r *gin.Engine) {
 
 	postRoute.GET("/:id", postHandler.GetPost)
 	postRoute.GET("/", postHandler.GetPosts)
+
+	r.GET("/", func(ctx *gin.Context) {
+		ctx.JSON(200, gin.H{"message": "Hola amigos"})
+	})
 }
 
 func SetupAuthRoutes(r *gin.Engine) {
