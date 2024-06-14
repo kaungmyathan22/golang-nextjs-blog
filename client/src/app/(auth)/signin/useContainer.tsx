@@ -1,6 +1,6 @@
 "use client";
 import { useToast } from "@/components/ui/use-toast";
-import { login } from "@/services/auth.service";
+import { State, login } from "@/services/auth.service";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect } from "react";
 import { useFormState } from "react-dom";
@@ -19,18 +19,14 @@ const useContainer = () => {
     resolver: zodResolver(formSchema),
   });
 
-  const [state, formAction] = useFormState(login, {
-    success: false,
-    error: null,
-    message: null,
-  });
+  const [state, formAction] = useFormState<State, FormData>(login, null);
 
   const { toast } = useToast();
   useEffect(() => {
     toast({
-      title: state?.error ? "Error" : "Success",
-      description: state.message,
-      variant: state.success ? "default" : "destructive",
+      title: state?.status === "success" ? "Success" : "Error",
+      description: state?.message,
+      variant: state?.status === "success" ? "success" : "destructive",
     });
   }, [state, toast]);
 
